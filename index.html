@@ -14,21 +14,36 @@
 
 body {
   background: #aaa;
+  margin: 10px;
+}
+
+main {
+  margin: 0 auto;
+  padding: 20px;
+  width: 560px;
+  background: #eee;
+  border-radius: 6px;
+  border: solid 1px #999;
 }
 
 label {
+  display: inline-block;
+  width: 65px;
+  text-align: right;
   font: 18px 'Helvetica Neue', Helvetica, san-serif;
   font-weight: 300;
   color: #888;
 }
 
 input {
-  width: 100%;
+  display: inline-block;
+  width: 438px;
   text-align: right;
   font: 22px 'Source Code Pro', Menlo, Consolas, Monaco, monospace;
   border-radius: 4px;
   border: solid 1px #ddd;
   padding: 2px;
+  margin: 5px;
 }
 
 input[readonly]
@@ -38,19 +53,46 @@ input[readonly]
   color: #888;
 }
 
-table {
-  margin: 0 auto;
-  padding: 20px;
-  width: 560px;
-  background: #eee;
-  border-radius: 6px;
-  border: solid 1px #999;
+@media only screen and (max-width: 590px) {
+  body {
+    margin: 0;
+  }
+
+  main {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    width: inherit;
+  }
+
+  label, input {
+    display: block;
+    width: 100%;
+  }
+
+  label {
+    text-align: left;
+  }
+
+  input {
+    margin: 5px 0 20px 0;
+  }
 }
 
-td {
-  text-align: right;
-  padding: 5px;
-  vertical-align: baseline;
+@media only screen and (max-width: 400px) {
+  main {
+    padding: 10px;
+  }
+
+  label {
+    font-size: 14px;
+  }
+
+  input {
+    font-size: 16px;
+    margin: 3px 0 16px 0;
+  }
 }
 </style>
 <script>
@@ -225,43 +267,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
 </script>
 </head>
 <body>
-<table>
-  <tr>
-    <td width="60px">
-      <label for="binary">binary</label>
-    </td>
-    <td>
-      <input type="text" size="16" name="binary" id="binary"
-             value="0111111101010011">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <label for="decimal">decimal</label>
-    </td>
-    <td>
-      <input type="text" size="16" name="decimal" id="decimal"
-             value="51966">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <label for="hex">hex</label>
-    </td>
-    <td>
-      <input type="text" size="16" name="hex" id="hex"
-             value="cafe">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <label for="utf8">utf-8</label>
-    </td>
-    <td>
-      <input type="text" size="16" name="utf8" id="utf8"
-             value="ec ab be" readonly="readonly">
-    </td>
-  </tr>
-</table>
+<main>
+  <label for="binary">binary</label>
+  <input type="text" size="16" name="binary" id="binary"
+         value="0111111101010011">
+  <label for="decimal">decimal</label>
+  <input type="text" size="16" name="decimal" id="decimal"
+         value="51966">
+  <label for="hex">hex</label>
+  <input type="text" size="16" name="hex" id="hex"
+         value="cafe">
+  <label for="utf8">utf-8</label>
+  <input type="text" size="16" name="utf8" id="utf8"
+         value="ec ab be" readonly="readonly">
+</main>
 </body>
 </html>
