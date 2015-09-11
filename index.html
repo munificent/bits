@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<title>Bits</title>
+<link href='//fonts.googleapis.com/css?family=Source+Code+Pro:400' rel='stylesheet' type='text/css'>
+<!-- Tell mobile browsers we're optimized for them and they don't need to crop
+     the viewport. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #aaa;
+}
+
+label {
+  font: 18px 'Helvetica Neue', Helvetica, san-serif;
+  font-weight: 300;
+  color: #888;
+}
+
+input {
+  width: 100%;
+  text-align: right;
+  font: 22px 'Source Code Pro', Menlo, Consolas, Monaco, monospace;
+  border-radius: 4px;
+  border: solid 1px #ddd;
+  padding: 2px;
+}
+
+input[readonly]
+{
+  background-color: #f4f4f4;
+  border-color: #e4e4e4;
+  color: #888;
+}
+
+table {
+  margin: 0 auto;
+  padding: 20px;
+  width: 560px;
+  background: #eee;
+  border-radius: 6px;
+  border: solid 1px #999;
+}
+
+td {
+  text-align: right;
+  padding: 5px;
+  vertical-align: baseline;
+}
+</style>
+<script>
+var binaryInput;
+var decimalInput;
+var hexInput;
+var utf8Input;
+
+function parseBinary(text) {
+  var value = 0;
+
+  for (var i = 0; i < text.length; i++) {
+    if (i > 0) value *= 2;
+
+    if (text[i] == "1") {
+      value++;
+    } else if (text[i] != "0") {
+      return null;
+    }
+  }
+
+  return value;
+}
+
+function parseDecimal(text) {
+  var value = parseInt(text, 10);
+  if (isNaN(value)) return null;
+  return value;
+}
+
+function parseHex(text) {
+  var value = parseInt(text, 16);
+  if (isNaN(value)) return null;
+  return value;
+}
+
+function refreshBinary(value) {
+  if (value == null) {
+    binaryInput.value = "";
+    return;
+  }
+
+  var binary = "";
+
+  while (value > 0) {
+    binary += (value % 2 == 1) ? "1" : "0";
+    value = Math.floor(value / 2);
+  }
+
+  binaryInput.value = binary;
+}
+
+function refreshDecimal(value) {
+  if (value == null) {
+    decimalInput.value = "";
+    return;
+  }
+
+  decimalInput.value = value.toString();
+}
+
+function refreshHex(value) {
+  if (value == null) {
+    hexInput.value = "";
+    return;
+  }
+
+  hexInput.value = value.toString(16);
+}
+
+function refreshUtf8(value) {
+  if (value == null) {
+    utf8Input.value = "";
+    return;
+  }
+
+  var bytes = [];
+
+  if (value <= 0x7f) {
+    // Single byte (i.e. fits in ASCII).
+    bytes.push(value & 0x7f);
+  }
+  else if (value <= 0x7ff) {
+    // Two byte sequence: 110xxxxx 10xxxxxx.
+    bytes.push(0xc0 | ((value & 0x7c0) >> 6));
+    bytes.push(0x80 | (value & 0x3f));
+  }
+  else if (value <= 0xffff) {
+    // Three byte sequence: 1110xxxx 10xxxxxx 10xxxxxx.
+    bytes.push(0xe0 | ((value & 0xf000) >> 12));
+    bytes.push(0x80 | ((value & 0xfc0) >> 6));
+    bytes.push(0x80 | (value & 0x3f));
+  }
+  else if (value <= 0x10ffff) {
+    // Four byte sequence: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx.
+    bytes.push(0xf0 | ((value & 0x1c0000) >> 18));
+    bytes.push(0x80 | ((value & 0x3f000) >> 12));
+    bytes.push(0x80 | ((value & 0xfc0) >> 6));
+    bytes.push(0x80 | (value & 0x3f));
+  }
+  else
+  {
+    utf8Input.value = "invalid UTF-8 :(";
+    return;
+  }
+
+  for (var i = 0; i < bytes.length; i++) {
+    var hex = bytes[i].toString(16);
+    if (hex.length == 1) hex = "0" + hex;
+
+    bytes[i] = hex;
+  }
+
+  utf8Input.value = bytes.join(" ");
+}
+
+function loadFromLocalStorage() {
+  try {
+    var value = window.localStorage.getItem("value");
+    if (value == null) return;
+
+    value = parseInt(value, 10);
+    refreshBinary(value);
+    refreshDecimal(value);
+    refreshHex(value);
+    refreshUtf8(value);
+  } catch (_) {
+    // Do nothing.
+  }
+}
+
+function storeValue(value) {
+  try {
+    window.localStorage.setItem("value", value);
+  } catch (_) {
+    // Do nothing.
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function(event) {
+  binaryInput = document.querySelector("#binary");
+  decimalInput = document.querySelector("#decimal");
+  hexInput = document.querySelector("#hex");
+  utf8Input = document.querySelector("#utf8");
+
+  binaryInput.addEventListener("input", function(event) {
+    var value = parseBinary(event.target.value);
+    refreshDecimal(value);
+    refreshHex(value);
+    refreshUtf8(value);
+    storeValue(value);
+  });
+
+  decimalInput.addEventListener("input", function(event) {
+    var value = parseDecimal(event.target.value);
+    refreshBinary(value);
+    refreshHex(value);
+    refreshUtf8(value);
+    storeValue(value);
+  });
+
+  hexInput.addEventListener("input", function(event) {
+    var value = parseHex(event.target.value);
+    refreshBinary(value);
+    refreshDecimal(value);
+    refreshUtf8(value);
+    storeValue(value);
+  });
+
+  loadFromLocalStorage();
+});
+</script>
+</head>
+<body>
+<table>
+  <tr>
+    <td width="60px">
+      <label for="binary">binary</label>
+    </td>
+    <td>
+      <input type="text" size="16" name="binary" id="binary"
+             value="0111111101010011">
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="decimal">decimal</label>
+    </td>
+    <td>
+      <input type="text" size="16" name="decimal" id="decimal"
+             value="51966">
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="hex">hex</label>
+    </td>
+    <td>
+      <input type="text" size="16" name="hex" id="hex"
+             value="cafe">
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="utf8">utf-8</label>
+    </td>
+    <td>
+      <input type="text" size="16" name="utf8" id="utf8"
+             value="ec ab be" readonly="readonly">
+    </td>
+  </tr>
+</table>
+</body>
+</html>
